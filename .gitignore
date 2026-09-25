@@ -46,3 +46,6 @@ __pycache__/
 *.swp
 .DS_Store
 Thumbs.db
+
+# Make logs
+.logs/

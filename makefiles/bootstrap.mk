@@ -1,15 +1,18 @@
 ##@ Bootstrap (run once from the workstation, after az login)
 
-.PHONY: bootstrap-init bootstrap-plan bootstrap-apply bootstrap-output
+.PHONY: bootstrap-init bootstrap-plan bootstrap-apply bootstrap-output bootstrap-ssh-key
 
 bootstrap-init: ## Initialize terraform/bootstrap (HCP backend, providers)
-	@scripts/bootstrap/terraform.sh init
+	@$(RUNNER) bootstrap init
 
 bootstrap-plan: ## Preview the GitHub identity changes
-	@scripts/bootstrap/terraform.sh plan
+	@$(RUNNER) bootstrap plan
 
 bootstrap-apply: ## Create the GitHub identity (asks for confirmation)
-	@scripts/bootstrap/terraform.sh apply
+	@$(RUNNER) bootstrap apply
 
 bootstrap-output: ## Show the values to store as GitHub secrets
-	@scripts/bootstrap/terraform.sh output
+	@$(RUNNER) bootstrap output
+
+bootstrap-ssh-key: ## Create the ansible SSH key and store it in GitHub
+	@$(RUNNER) bootstrap ssh-key

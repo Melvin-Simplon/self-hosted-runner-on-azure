@@ -69,13 +69,24 @@ ansible_ping() {
     with_ssh_open ansible runners -m ansible.builtin.ping
 }
 
-# CLI entry: scripts/runner.sh ansible <ping>
+# Dry run: shows what would change, changes nothing
+ansible_check() {
+    with_ssh_open ansible-playbook site.yml --check --diff
+}
+
+ansible_apply() {
+    with_ssh_open ansible-playbook site.yml --diff
+}
+
+# CLI entry: scripts/runner.sh ansible <ping|check|apply>
 ansible_cli() {
     local action="${1:-}"
     case "${action}" in
         ping) ansible_ping ;;
+        check) ansible_check ;;
+        apply) ansible_apply ;;
         *)
-            log_err "usage: scripts/runner.sh ansible <ping>"
+            log_err "usage: scripts/runner.sh ansible <ping|check|apply>"
             return 2
             ;;
     esac
@@ -87,6 +98,8 @@ handle_ansible_menu() {
         ui_ask "Pick an action"
         case "${REPLY}" in
             1) ansible_ping ;;
+            2) ansible_check ;;
+            3) ansible_apply ;;
             0) return 0 ;;
             *)
                 ui_invalid_choice

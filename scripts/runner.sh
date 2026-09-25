@@ -33,7 +33,7 @@ Usage: scripts/runner.sh [command]
   menu                       Interactive menu (default)
   bootstrap <action>         One-time setup: init, plan, apply, output, ssh-key
   infra <action>             Dev environment: init, plan, apply, check, output, destroy
-  ansible <action>           Configure the VM: ping
+  ansible <action>           Configure the VM: ping, check, apply
   lint                       shellcheck and terraform fmt check
   help                       Show this help
   version                    Show the version

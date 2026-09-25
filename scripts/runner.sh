@@ -40,12 +40,10 @@ handle_coming_soon() {
 }
 
 main_loop() {
-    local choice
     while true; do
         show_main_menu
-        ui_prompt "Pick your move"
-        read -r choice
-        case "${choice}" in
+        ui_ask "Pick your move"
+        case "${REPLY}" in
             1) handle_bootstrap_menu ;;
             2) handle_coming_soon "Infra" ;;
             3) handle_coming_soon "Ansible" ;;

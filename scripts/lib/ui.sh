@@ -54,9 +54,15 @@ ui_item() {
     ui_line "$(printf '%s[%s]%s  %-14s %s' "${BRIGHT_BLUE}" "${key}" "${RESET}" "${label}" "${badge}")"
 }
 
-ui_prompt() {
+# Asks for a choice and stores it in REPLY.
+# read -e uses readline: Backspace and arrows edit the input instead of printing ^? or ^[[D.
+# \001 and \002 wrap the color codes so readline knows they take no space on screen.
+ui_ask() {
+    local prompt
+    prompt="${BLUE:+$'\001'${BLUE}$'\002'}┃${RESET:+$'\001'${RESET}$'\002'}  "
+    prompt+="${BOLD:+$'\001'${BOLD}${BRIGHT_BLUE}$'\002'}▪ $1 : ${RESET:+$'\001'${RESET}$'\002'}"
     ui_line
-    printf '%s┃%s  %s▪ %s : %s' "${BLUE}" "${RESET}" "${BOLD}${BRIGHT_BLUE}" "$1" "${RESET}"
+    read -e -r -p "${prompt}" || REPLY=""
 }
 
 ui_invalid_choice() {

@@ -1,6 +1,6 @@
 SHELL := /usr/bin/env bash
 .SHELLFLAGS := -euo pipefail -c
-.DEFAULT_GOAL := help
+.DEFAULT_GOAL := menu
 
 # Every target is a shortcut to the toolkit: the logic lives in scripts/runner.sh and scripts/lib/
 RUNNER := scripts/runner.sh

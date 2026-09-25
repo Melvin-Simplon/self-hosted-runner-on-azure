@@ -1,8 +1,8 @@
 ##@ Toolkit
 
-.PHONY: help targets lint
+.PHONY: menu targets lint
 
-help: ## Open the interactive menu (default)
+menu: ## Open the interactive menu (default)
 	@$(RUNNER) menu
 
 targets: ## List the make targets

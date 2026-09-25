@@ -49,3 +49,6 @@ Thumbs.db
 
 # Make logs
 .logs/
+
+# Child modules use the lock file of the root module that calls them
+terraform/modules/**/.terraform.lock.hcl

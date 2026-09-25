@@ -8,3 +8,4 @@ RUNNER := scripts/runner.sh
 include makefiles/common.mk
 include makefiles/bootstrap.mk
 include makefiles/infra.mk
+include makefiles/ansible.mk

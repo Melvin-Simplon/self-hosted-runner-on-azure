@@ -5,8 +5,8 @@
 # No `set -euo pipefail` here: it would leak into the caller's shell.
 # No `main` either: it would overwrite the caller's `main` when sourced from another script.
 
-# shellcheck source=scripts/lib.sh
-source "$(dirname "${BASH_SOURCE[0]}")/../lib.sh"
+# shellcheck source=scripts/lib/core.sh
+source "$(dirname "${BASH_SOURCE[0]}")/../lib/core.sh"
 
 ensure_sourced() {
     if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then

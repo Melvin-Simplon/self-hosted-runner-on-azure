@@ -1,0 +1,5 @@
+# Collections used by the playbooks, installed in CI with:
+# ansible-galaxy collection install -r ansible/requirements.yml
+collections:
+  - name: ansible.posix
+    version: ">=2.0.0,<3.0.0"

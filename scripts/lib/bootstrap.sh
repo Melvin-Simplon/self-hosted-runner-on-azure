@@ -76,12 +76,10 @@ bootstrap_cli() {
 }
 
 handle_bootstrap_menu() {
-    local choice
     while true; do
         show_bootstrap_menu
-        ui_prompt "Pick an action"
-        read -r choice
-        case "${choice}" in
+        ui_ask "Pick an action"
+        case "${REPLY}" in
             1) bootstrap_terraform init ;;
             2) bootstrap_terraform plan ;;
             3) bootstrap_terraform apply ;;

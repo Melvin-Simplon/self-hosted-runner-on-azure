@@ -62,14 +62,14 @@ bootstrap_ssh_key() {
     log_ok "variable ANSIBLE_SSH_PUBLIC_KEY set"
 }
 
-# CLI entry: runner.sh bootstrap <init|plan|apply|output|ssh-key>
+# CLI entry: scripts/runner.sh bootstrap <init|plan|apply|output|ssh-key>
 bootstrap_cli() {
     local action="${1:-}"
     case "${action}" in
         ssh-key) bootstrap_ssh_key ;;
         init | plan | apply | output) bootstrap_terraform "${action}" ;;
         *)
-            log_err "usage: runner.sh bootstrap <init|plan|apply|output|ssh-key>"
+            log_err "usage: scripts/runner.sh bootstrap <init|plan|apply|output|ssh-key>"
             return 2
             ;;
     esac

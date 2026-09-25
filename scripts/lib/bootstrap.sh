@@ -8,7 +8,6 @@ fi
 RUNNER_BOOTSTRAP_LOADED=1
 
 BOOTSTRAP_TF_DIR="${RUNNER_ROOT}/terraform/bootstrap"
-ANSIBLE_SSH_KEY_FILE="${ANSIBLE_SSH_KEY_FILE:-${HOME}/.ssh/runner-azure-ansible}"
 
 # Runs in a subshell: env.sh exports TF_VAR_subscription_id without leaking into the menu
 bootstrap_terraform() {

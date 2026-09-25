@@ -1,0 +1,7 @@
+---
+- name: Configure the runner VM
+  hosts: runners
+  become: true
+  roles:
+    - common
+    - github_runner

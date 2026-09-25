@@ -1,0 +1,30 @@
+---
+- name: Update the apt cache
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+  check_mode: false
+  changed_when: false
+
+- name: Install base packages
+  ansible.builtin.apt:
+    name:
+      - git
+      - curl
+      - jq
+      - tar
+    state: present
+
+- name: Harden the SSH server
+  ansible.builtin.copy:
+    dest: /etc/ssh/sshd_config.d/10-hardening.conf
+    content: |
+      PermitRootLogin no
+      PasswordAuthentication no
+      KbdInteractiveAuthentication no
+      AllowUsers ansible
+    owner: root
+    group: root
+    mode: "0644"
+    validate: /usr/sbin/sshd -t -f %s
+  notify: Restart SSH

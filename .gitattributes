@@ -1,0 +1,14 @@
+# Normalize line endings. Shell scripts and YAML must stay LF or they break on Linux.
+* text=auto eol=lf
+
+*.sh    text eol=lf
+*.tf    text eol=lf
+*.hcl   text eol=lf
+*.yml   text eol=lf
+*.yaml  text eol=lf
+*.md    text eol=lf
+
+# Treat these as binary so diffs and EOL normalization leave them alone.
+*.png   binary
+*.jpg   binary
+*.gif   binary

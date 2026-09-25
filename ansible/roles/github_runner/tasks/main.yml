@@ -1,0 +1,27 @@
+---
+# No `groups`: the account joins no admin group, so a CI job can never become root
+- name: Create the runner user
+  ansible.builtin.user:
+    name: "{{ github_runner_user }}"
+    home: "{{ github_runner_dir }}"
+    create_home: true
+    system: true
+    shell: /usr/sbin/nologin
+
+# Full file path in dest: with a directory, get_url would download again on every run
+- name: Download the runner archive
+  ansible.builtin.get_url:
+    url: "https://github.com/actions/runner/releases/download/v{{ github_runner_version }}/actions-runner-linux-x64-{{ github_runner_version }}.tar.gz"
+    dest: "{{ github_runner_dir }}/actions-runner-linux-x64-{{ github_runner_version }}.tar.gz"
+    checksum: "sha256:{{ github_runner_sha256 }}"
+    owner: "{{ github_runner_user }}"
+    group: "{{ github_runner_user }}"
+    mode: "0644"
+
+- name: Extract the runner archive
+  ansible.builtin.unarchive:
+    src: "{{ github_runner_dir }}/actions-runner-linux-x64-{{ github_runner_version }}.tar.gz"
+    dest: "{{ github_runner_dir }}"
+    remote_src: true
+    owner: "{{ github_runner_user }}"
+    group: "{{ github_runner_user }}"

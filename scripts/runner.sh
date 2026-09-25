@@ -4,7 +4,7 @@
 # -e deliberately omitted: a failing action must bring the menu back, not kill it.
 set -uo pipefail
 
-RUNNER_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+RUNNER_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 readonly RUNNER_ROOT
 readonly RUNNER_VERSION="0.1.0"
 
@@ -22,7 +22,7 @@ source "${RUNNER_ROOT}/scripts/lib/lint.sh"
 
 usage() {
     cat <<EOF
-Usage: runner.sh [command]
+Usage: scripts/runner.sh [command]
 
   menu                       Interactive menu (default)
   bootstrap <action>         One-time setup: init, plan, apply, output, ssh-key

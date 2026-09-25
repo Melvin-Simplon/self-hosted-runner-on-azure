@@ -10,7 +10,7 @@ lint_shell() {
     log_step "Lint: shell scripts"
     require_cmd shellcheck || return 1
     local -a scripts
-    mapfile -t scripts < <(find "${RUNNER_ROOT}/scripts" "${RUNNER_ROOT}/runner.sh" -name '*.sh' | sort)
+    mapfile -t scripts < <(find "${RUNNER_ROOT}/scripts" -name '*.sh' | sort)
     # Run from the root: the `# shellcheck source=scripts/...` paths are relative to it
     if (cd "${RUNNER_ROOT}" && shellcheck -x "${scripts[@]}"); then
         log_ok "shellcheck passed on ${#scripts[@]} scripts"

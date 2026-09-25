@@ -1,0 +1,10 @@
+---
+# Unprivileged account that runs the CI jobs: no sudo, no login shell
+github_runner_user: github-runner
+# Runner install dir, also the home of github_runner_user (the job cache lives here)
+github_runner_dir: /opt/actions-runner
+
+# Latest release: https://github.com/actions/runner/releases
+# Change both together: the checksum protects against a tampered archive
+github_runner_version: "2.337.0"
+github_runner_sha256: 70920811a4f8ad4328818682bca5c6469c1c942fab52448868071d0063816613

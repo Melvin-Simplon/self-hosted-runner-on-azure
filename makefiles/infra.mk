@@ -11,7 +11,7 @@ infra-plan: ## Preview the network and VM changes
 infra-apply: ## Create the network and the runner VM (asks for confirmation)
 	@$(RUNNER) infra apply
 
-infra-check: ## Check the VM runs with its ephemeral NVMe disk
+infra-check: ## Check the VM runs with its ephemeral OS disk
 	@$(RUNNER) infra check
 
 infra-output: ## Show the IP, the ansible user and the NSG name

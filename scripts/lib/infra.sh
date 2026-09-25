@@ -42,7 +42,7 @@ infra_terraform() {
     )
 }
 
-# Proves what validate cannot: Azure accepted the VM and its ephemeral NVMe disk
+# Proves what validate cannot: Azure accepted the VM and its ephemeral OS disk
 infra_check() {
     require_cmd az || return 1
     log_step "Infra: check the runner VM"
@@ -63,10 +63,10 @@ infra_check() {
         log_err "VM is not running"
         failed=1
     fi
-    if [[ "${placement}" == "NvmeDisk" ]]; then
-        log_ok "OS disk is ephemeral on the local NVMe"
+    if [[ "${placement}" == "CacheDisk" ]]; then
+        log_ok "OS disk is ephemeral on the local cache disk"
     else
-        log_err "OS disk is not ephemeral on NVMe"
+        log_err "OS disk is not ephemeral on the cache disk"
         failed=1
     fi
     log_warn "the VM costs money while it exists, run: make infra-destroy"

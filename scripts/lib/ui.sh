@@ -160,6 +160,8 @@ show_ansible_menu() {
     ui_header
     ui_section "ANSIBLE" "SSH opens for your IP only, then closes"
     ui_item 1 "Ping"
+    ui_item 2 "Check (dry run)"
+    ui_item 3 "Apply"
     ui_section_end
     ui_footer 0 "Back"
 }

@@ -1,9 +1,12 @@
-##@ Tooling
+##@ Toolkit
 
-.PHONY: help lint
+.PHONY: help targets lint
 
-help: ## Show this help
+help: ## Open the interactive menu (default)
+	@$(RUNNER) menu
+
+targets: ## List the make targets
 	@scripts/help.sh $(MAKEFILE_LIST)
 
 lint: ## Run shellcheck and terraform fmt check
-	@scripts/lint.sh
+	@$(RUNNER) lint

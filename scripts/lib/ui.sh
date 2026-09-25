@@ -76,7 +76,7 @@ show_main_menu() {
     ui_line "${DIM}Pick a phase:${RESET}"
     ui_line
     ui_item 1 "Bootstrap" ready
-    ui_item 2 "Infra" soon
+    ui_item 2 "Infra" ready
     ui_item 3 "Ansible" soon
     ui_item 4 "Benchmark" soon
     ui_line
@@ -91,6 +91,18 @@ show_bootstrap_menu() {
     ui_item 3 "Apply"
     ui_item 4 "Output"
     ui_item 5 "SSH key"
+    ui_line
+    ui_item 0 "Back"
+}
+
+show_infra_menu() {
+    ui_header "INFRA  (dev environment, the VM costs money while it exists)"
+    ui_item 1 "Init"
+    ui_item 2 "Plan"
+    ui_item 3 "Apply"
+    ui_item 4 "Check"
+    ui_item 5 "Output"
+    ui_item 6 "Destroy"
     ui_line
     ui_item 0 "Back"
 }

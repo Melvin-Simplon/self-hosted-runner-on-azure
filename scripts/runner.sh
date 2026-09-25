@@ -10,6 +10,8 @@ readonly RUNNER_VERSION="0.1.0"
 
 : "${LOG_FILE:=${RUNNER_ROOT}/.logs/runner.log}"
 export LOG_FILE
+# Key of the ansible sudo account, shared by the bootstrap and infra modules
+: "${ANSIBLE_SSH_KEY_FILE:=${HOME}/.ssh/runner-azure-ansible}"
 
 # shellcheck source=scripts/lib/core.sh
 source "${RUNNER_ROOT}/scripts/lib/core.sh"
@@ -17,6 +19,8 @@ source "${RUNNER_ROOT}/scripts/lib/core.sh"
 source "${RUNNER_ROOT}/scripts/lib/ui.sh"
 # shellcheck source=scripts/lib/bootstrap.sh
 source "${RUNNER_ROOT}/scripts/lib/bootstrap.sh"
+# shellcheck source=scripts/lib/infra.sh
+source "${RUNNER_ROOT}/scripts/lib/infra.sh"
 # shellcheck source=scripts/lib/lint.sh
 source "${RUNNER_ROOT}/scripts/lib/lint.sh"
 
@@ -26,6 +30,7 @@ Usage: scripts/runner.sh [command]
 
   menu                       Interactive menu (default)
   bootstrap <action>         One-time setup: init, plan, apply, output, ssh-key
+  infra <action>             Dev environment: init, plan, apply, check, output, destroy
   lint                       shellcheck and terraform fmt check
   help                       Show this help
   version                    Show the version
@@ -35,7 +40,7 @@ EOF
 # Phase not built yet: say so instead of showing a broken screen
 handle_coming_soon() {
     ui_header "${1^^}"
-    ui_line "${DIM}$1 is coming soon, it follows Bootstrap in the roadmap.${RESET}"
+    ui_line "${DIM}$1 is coming soon, it follows Infra in the roadmap.${RESET}"
     press_enter_to_continue
 }
 
@@ -45,7 +50,7 @@ main_loop() {
         ui_ask "Pick your move"
         case "${REPLY}" in
             1) handle_bootstrap_menu ;;
-            2) handle_coming_soon "Infra" ;;
+            2) handle_infra_menu ;;
             3) handle_coming_soon "Ansible" ;;
             4) handle_coming_soon "Benchmark" ;;
             9)
@@ -68,6 +73,7 @@ main() {
     case "${cmd}" in
         menu) main_loop ;;
         bootstrap) bootstrap_cli "$@" ;;
+        infra) infra_cli "$@" ;;
         lint) run_lint ;;
         help | -h | --help) usage ;;
         version | -v | --version) printf 'runner.sh %s\n' "${RUNNER_VERSION}" ;;

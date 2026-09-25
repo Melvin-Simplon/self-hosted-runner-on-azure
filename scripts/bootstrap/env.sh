@@ -4,12 +4,14 @@
 # Must be sourced, not executed: `source scripts/bootstrap/env.sh`
 # No `set -euo pipefail` here: it would leak into the caller's shell.
 # No `main` either: it would overwrite the caller's `main` when sourced from another script.
+# Works in bash and zsh: zsh has no BASH_SOURCE, but sets $0 to the sourced file.
 
 # shellcheck source=scripts/lib/core.sh
-source "$(dirname "${BASH_SOURCE[0]}")/../lib/core.sh"
+source "$(dirname "${BASH_SOURCE[0]:-$0}")/../lib/core.sh"
 
 ensure_sourced() {
-    if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    # Only bash can be caught executing it; in zsh BASH_SOURCE is empty, so this never matches
+    if [[ -n "${BASH_SOURCE[0]:-}" && "${BASH_SOURCE[0]}" == "${0}" ]]; then
         log_err "this script must be sourced: source ${0}"
         exit 1
     fi

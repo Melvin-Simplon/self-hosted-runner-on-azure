@@ -33,9 +33,6 @@ resource "azurerm_linux_virtual_machine" "this" {
   network_interface_ids = [azurerm_network_interface.this.id]
   tags                  = var.tags
 
-  # v6/v7 sizes only expose NVMe, the default SCSI controller would be rejected
-  disk_controller_type = "NVMe"
-
   # SSH key only, no password on the VM
   disable_password_authentication = true
 
@@ -44,7 +41,7 @@ resource "azurerm_linux_virtual_machine" "this" {
     public_key = var.ssh_public_key
   }
 
-  # Ephemeral OS disk on the local NVMe: faster than a network disk and free.
+  # Ephemeral OS disk on the local cache disk: faster than a network disk and free.
   # Trade-off: the VM cannot be stopped/deallocated, only destroyed (fine, it is on demand).
   os_disk {
     caching              = "ReadOnly" # required for ephemeral disks
@@ -52,11 +49,11 @@ resource "azurerm_linux_virtual_machine" "this" {
 
     diff_disk_settings {
       option    = "Local"
-      placement = "NvmeDisk"
+      placement = "CacheDisk" # 50 GB on D2s_v3, the Ubuntu image needs 30 GB
     }
   }
 
-  # "minimal" is the Gen2 image, "minimal-gen1" would not boot on v6/v7 sizes
+  # "minimal" is the Gen2 image, D2s_v3 supports Gen1 and Gen2
   source_image_reference {
     publisher = "Canonical"
     offer     = "ubuntu-24_04-lts"

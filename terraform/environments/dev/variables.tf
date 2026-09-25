@@ -18,7 +18,7 @@ variable "name_prefix" {
 variable "vm_size" {
   description = "Runner VM size, change it to benchmark another size"
   type        = string
-  default     = "Standard_D4alds_v7"
+  default     = "Standard_D2s_v3"
 }
 
 variable "ssh_public_key" {

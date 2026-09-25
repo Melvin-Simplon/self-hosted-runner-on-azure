@@ -19,19 +19,20 @@ variable "subnet_id" {
 }
 
 variable "vm_size" {
-  description = "VM size, must have a local NVMe disk to host the ephemeral OS disk"
+  description = "VM size, must be allowed by the school Azure Policy and support an ephemeral OS disk"
   type        = string
-  default     = "Standard_D4alds_v7"
+  default     = "Standard_D2s_v3"
 
   validation {
-    # v6/v7 sizes with a "d" (local disk): D4alds_v7, D8ds_v6, F4ads_v7...
-    condition     = can(regex("^Standard_[DF][0-9]+[a-z]*d[a-z]*_v[67]$", var.vm_size))
-    error_message = "vm_size must be a v6 or v7 size with a local disk (a \"d\" in the name), for example Standard_D4alds_v7."
+    # The policy allows ~20 sizes, but in France Central with this quota only D2s_v3 is
+    # both available and able to host an ephemeral OS disk (50 GB cache disk)
+    condition     = contains(["Standard_D2s_v3"], var.vm_size)
+    error_message = "vm_size must be Standard_D2s_v3: other sizes are denied by the school policy, unavailable, or have no room for an ephemeral OS disk."
   }
 }
 
 variable "zone" {
-  description = "Availability zone of the VM and its public IP (v6 sizes are blocked in zone 3 on this subscription)"
+  description = "Availability zone of the VM and its public IP (D2s_v3 is blocked in zone 3 on this subscription)"
   type        = string
   default     = "1"
 }

@@ -1,0 +1,48 @@
+# Terraform
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+*.tfplan
+tfplan*
+crash.log
+crash.*.log
+*.tfvars
+*.tfvars.json
+!*.tfvars.example
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+terraform.rc
+
+# Ansible
+*.retry
+.vault_pass*
+vault_pass*
+ansible/inventories/**/hosts.generated.*
+.ansible/
+
+# Secrets et clés
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.pfx
+id_rsa*
+id_ed25519*
+*.azureauth
+
+# Python (Ansible, scripts)
+.venv/
+venv/
+__pycache__/
+*.pyc
+
+# IDE et OS
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db

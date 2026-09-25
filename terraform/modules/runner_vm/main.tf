@@ -1,4 +1,4 @@
-  # Static: the IP must not change while the workflow opens SSH for Ansible
+# Static: the IP must not change while the workflow opens SSH for Ansible
 resource "azurerm_public_ip" "this" {
   name                = "pip-${var.name_prefix}"
   location            = var.location

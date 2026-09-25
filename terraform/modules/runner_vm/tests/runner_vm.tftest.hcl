@@ -14,8 +14,8 @@ run "defaults_match_the_chosen_size" {
   command = plan
 
   assert {
-    condition     = azurerm_linux_virtual_machine.this.size == "Standard_D4alds_v7"
-    error_message = "Default size must be Standard_D4alds_v7"
+    condition     = azurerm_linux_virtual_machine.this.size == "Standard_D2s_v3"
+    error_message = "Default size must be Standard_D2s_v3, the only size allowed by the school policy with an ephemeral OS disk"
   }
 
   assert {
@@ -33,17 +33,12 @@ run "ssh_key_only" {
   }
 }
 
-run "os_disk_is_ephemeral_on_nvme" {
+run "os_disk_is_ephemeral_on_cache_disk" {
   command = plan
 
   assert {
-    condition     = azurerm_linux_virtual_machine.this.os_disk[0].diff_disk_settings[0].placement == "NvmeDisk"
-    error_message = "OS disk must be ephemeral on the local NVMe disk"
-  }
-
-  assert {
-    condition     = azurerm_linux_virtual_machine.this.disk_controller_type == "NVMe"
-    error_message = "v6/v7 sizes only support the NVMe disk controller"
+    condition     = azurerm_linux_virtual_machine.this.os_disk[0].diff_disk_settings[0].placement == "CacheDisk"
+    error_message = "OS disk must be ephemeral on the local cache disk"
   }
 }
 
@@ -61,11 +56,12 @@ run "public_ip_is_static_in_vm_zone" {
   }
 }
 
-run "rejects_size_without_local_nvme" {
+run "rejects_size_denied_by_policy" {
   command = plan
 
+  # Refused at apply time by the school Azure Policy (RequestDisallowedByPolicy)
   variables {
-    vm_size = "Standard_D4als_v7"
+    vm_size = "Standard_D4alds_v7"
   }
 
   expect_failures = [var.vm_size]

@@ -1,13 +1,16 @@
 #!/usr/bin/env bash
 
-# Exports the variables needed by terraform/bootstrap.
+# Exports the variables needed by terraform/bootstrap and terraform/environments/dev.
 # Must be sourced, not executed: `source scripts/bootstrap/env.sh`
 # No `set -euo pipefail` here: it would leak into the caller's shell.
 # No `main` either: it would overwrite the caller's `main` when sourced from another script.
 # Works in bash and zsh: zsh has no BASH_SOURCE, but sets $0 to the sourced file.
 
+: "${RUNNER_ROOT:=$(cd -- "$(dirname -- "${BASH_SOURCE[0]:-$0}")/../.." && pwd)}"
+: "${ENV_FILE:=${RUNNER_ROOT}/.env}"
+
 # shellcheck source=scripts/lib/core.sh
-source "$(dirname "${BASH_SOURCE[0]:-$0}")/../lib/core.sh"
+source "${RUNNER_ROOT}/scripts/lib/core.sh"
 
 ensure_sourced() {
     # Only bash can be caught executing it; in zsh BASH_SOURCE is empty, so this never matches
@@ -30,10 +33,24 @@ export_subscription_id() {
     log_ok "TF_VAR_subscription_id exported"
 }
 
+# A value already in the environment wins over .env: the CI sets its own
+export_project_env() {
+    TF_VAR_resource_group_name="${TF_VAR_resource_group_name:-$(env_value AZURE_RESOURCE_GROUP)}"
+    TF_CLOUD_ORGANIZATION="${TF_CLOUD_ORGANIZATION:-$(env_value TF_CLOUD_ORGANIZATION)}"
+    if [[ -z "${TF_VAR_resource_group_name}" || -z "${TF_CLOUD_ORGANIZATION}" ]]; then
+        log_err "AZURE_RESOURCE_GROUP and TF_CLOUD_ORGANIZATION missing in ${ENV_FILE}, see .env.example"
+        return 1
+    fi
+    TF_VAR_github_repository="${TF_VAR_github_repository:-$(github_repo_slug)}"
+    export TF_VAR_resource_group_name TF_CLOUD_ORGANIZATION TF_VAR_github_repository
+    log_ok "resource group ${TF_VAR_resource_group_name}, HCP organization ${TF_CLOUD_ORGANIZATION}"
+}
+
 load_bootstrap_env() {
     ensure_sourced
     ensure_az_login || return 1
     export_subscription_id
+    export_project_env
 }
 
 load_bootstrap_env || return 1

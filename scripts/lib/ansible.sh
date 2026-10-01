@@ -11,8 +11,6 @@ RUNNER_ANSIBLE_LOADED=1
 ANSIBLE_DIR="${RUNNER_ROOT}/ansible"
 # Distinct from the CI rule name, so the two never delete each other's rule
 SSH_RULE_NAME="allow-ssh-workstation"
-# Holds the fine-grained PAT that requests runner registration tokens, ignored by git
-ENV_FILE="${RUNNER_ROOT}/.env"
 
 # Prints one Terraform output of the dev environment on stdout (logs go to stderr)
 infra_output() {
@@ -56,7 +54,9 @@ with_ssh_open() {
             log_err "no runner VM in the Terraform outputs, run: make infra-apply"
             exit 1
         fi
-        export RUNNER_IP="${ip}" ANSIBLE_CONFIG="${ANSIBLE_DIR}/ansible.cfg"
+        runner_scope >/dev/null || exit 1
+        GITHUB_RUNNER_URL="${GITHUB_RUNNER_URL:-$(env_value GITHUB_RUNNER_URL)}"
+        export RUNNER_IP="${ip}" ANSIBLE_CONFIG="${ANSIBLE_DIR}/ansible.cfg" GITHUB_RUNNER_URL
 
         ssh_open "${rg}" "${nsg}" || exit 1
         # shellcheck disable=SC2064 # expand rg and nsg now, the trap runs after they are gone
@@ -76,29 +76,17 @@ ansible_check() {
     with_ssh_open ansible-playbook site.yml --check --diff
 }
 
-# Prints the admin PAT on stdout. .env is parsed, never sourced: it holds data, not code to run.
-read_admin_token() {
-    [[ -r "${ENV_FILE}" ]] || return 0
-    sed -nE "s/^GITHUB_RUNNER_ADMIN_TOKEN=[\"']?([^\"']*)[\"']?[[:space:]]*$/\1/p" "${ENV_FILE}" | tail -n 1
-}
-
-# Prints the repository as owner/name on stdout, taken from the origin remote
-github_repo_slug() {
-    git -C "${RUNNER_ROOT}" remote get-url origin |
-        sed -E 's#^(git@github\.com:|https://github\.com/)##; s#\.git$##'
-}
-
 # Prints a runner registration token (valid 1 hour) on stdout, diagnostics go to stderr.
 # The PAT reaches gh through GH_TOKEN for this call only: never in the command line, never exported.
 registration_token() {
-    local pat repo
-    pat="$(read_admin_token)"
+    local pat scope
+    pat="$(env_value GITHUB_RUNNER_ADMIN_TOKEN)"
     if [[ -z "${pat}" ]]; then
         log_err "GITHUB_RUNNER_ADMIN_TOKEN missing in ${ENV_FILE}, see .env.example"
         return 1
     fi
-    repo="$(github_repo_slug)" || return 1
-    GH_TOKEN="${pat}" gh api -X POST "repos/${repo}/actions/runners/registration-token" --jq .token
+    scope="$(runner_scope)" || return 1
+    GH_TOKEN="${pat}" gh api -X POST "${scope}/actions/runners/registration-token" --jq .token
 }
 
 # A token is requested on every run: the register task uses it on a new VM and skips it otherwise.

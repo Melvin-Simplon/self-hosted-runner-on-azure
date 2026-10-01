@@ -6,6 +6,8 @@ SHELL := /usr/bin/env bash
 RUNNER := scripts/runner.sh
 
 include makefiles/common.mk
+include makefiles/setup.mk
 include makefiles/bootstrap.mk
 include makefiles/infra.mk
 include makefiles/ansible.mk
+include makefiles/benchmark.mk

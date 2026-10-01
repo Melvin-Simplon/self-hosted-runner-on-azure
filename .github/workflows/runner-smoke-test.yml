@@ -1,0 +1,24 @@
+name: Runner smoke test
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke-test:
+    # The repository is public: a pull request from a fork must never reach the VM,
+    # only pull requests from branches of this repository run on the runner.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: [self-hosted, Linux, X64]
+    timeout-minutes: 5
+    steps:
+      - name: Show where the job runs
+        run: |
+          whoami
+          hostname

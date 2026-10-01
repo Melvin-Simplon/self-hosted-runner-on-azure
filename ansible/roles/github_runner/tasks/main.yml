@@ -42,6 +42,24 @@
     ACTIONS_RUNNER_INPUT_TOKEN: "{{ github_runner_token }}"
   no_log: true
 
+# useradd leaves the home in 0755: any account on the VM could list the runner files and read some of them
+- name: Restrict access to the runner directory
+  ansible.builtin.file:
+    path: "{{ github_runner_dir }}"
+    state: directory
+    owner: "{{ github_runner_user }}"
+    group: "{{ github_runner_user }}"
+    mode: "0750"
+
+# config.sh writes it in 0664; its key (.credentials_rsaparams) is already 0600
+- name: Restrict access to the runner credentials
+  ansible.builtin.file:
+    path: "{{ github_runner_dir }}/.credentials"
+    state: file
+    owner: "{{ github_runner_user }}"
+    group: "{{ github_runner_user }}"
+    mode: "0600"
+
 - name: Install the runner systemd service
   ansible.builtin.template:
     src: github-runner.service.j2

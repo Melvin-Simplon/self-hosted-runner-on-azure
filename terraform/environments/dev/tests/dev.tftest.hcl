@@ -2,14 +2,15 @@
 mock_provider "azurerm" {
   mock_data "azurerm_resource_group" {
     defaults = {
-      id       = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/mpetitRG"
+      id       = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-test"
       location = "francecentral"
     }
   }
 }
 
 variables {
-  subscription_id = "00000000-0000-0000-0000-000000000000"
+  subscription_id     = "00000000-0000-0000-0000-000000000000"
+  resource_group_name = "rg-test"
   # Throwaway public key, its private key was never kept
   ssh_public_key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIC+Uu8Rtusw+fV0sODSXzm6jqQE1rm0LvJ2i7sSohvyy test"
 }
@@ -28,7 +29,7 @@ run "outputs_expose_what_the_workflows_need" {
   }
 
   assert {
-    condition     = output.resource_group_name == "mpetitRG"
+    condition     = output.resource_group_name == "rg-test"
     error_message = "resource_group_name output is needed by az network nsg rule create"
   }
 }

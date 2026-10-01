@@ -1,4 +1,11 @@
 ---
+- name: Check the runner target is set
+  ansible.builtin.assert:
+    that:
+      - github_runner_url is match('^https://github\.com/[A-Za-z0-9-]+(/(?!\.+/?$)[A-Za-z0-9_.-]+)?/?$')
+    fail_msg: "GITHUB_RUNNER_URL must be https://github.com/<org> or https://github.com/<owner>/<repo>, got: '{{ github_runner_url }}'"
+    quiet: true
+
 # No `groups`: the account joins no admin group, so a CI job can never become root
 - name: Create the runner user
   ansible.builtin.user:
@@ -26,6 +33,46 @@
     owner: "{{ github_runner_user }}"
     group: "{{ github_runner_user }}"
 
+- name: Read the current registration
+  ansible.builtin.slurp:
+    src: "{{ github_runner_dir }}/.runner"
+  register: github_runner_registration
+  failed_when: false
+
+# config.sh runs only once (creates: .runner): to move the runner to another target, the local
+# registration is dropped, so the register task below runs again with the new URL.
+# The old entry stays offline on GitHub, which removes it after 14 days without contact.
+- name: Move the runner to the requested target
+  when:
+    - github_runner_registration.content is defined
+    - github_runner_registered_url | regex_replace('/$', '') != github_runner_url | regex_replace('/$', '')
+  vars:
+    # config.sh writes the file with a UTF-8 BOM, from_json rejects it
+    github_runner_registered_url: "{{ (github_runner_registration.content | b64decode | regex_replace('^\ufeff', '') | from_json).gitHubUrl }}"
+  block:
+    - name: Say where the runner moves
+      ansible.builtin.debug:
+        msg: >-
+          Moving from {{ github_runner_registered_url }} to {{ github_runner_url }}.
+          The old entry stays offline there: delete it in Settings, Actions, Runners, or GitHub drops it after 14 days.
+
+    # The unit may be missing if a previous run stopped before installing it
+    - name: Stop the runner before changing its registration
+      ansible.builtin.systemd_service:
+        name: github-runner
+        state: stopped
+      failed_when: false
+
+    - name: Drop the local registration
+      ansible.builtin.file:
+        path: "{{ github_runner_dir }}/{{ item }}"
+        state: absent
+      loop:
+        - .runner
+        - .credentials
+        - .credentials_rsaparams
+
+# --replace: an entry of this VM on the target (left offline by an earlier move) is taken over.
 # Token passed as ACTIONS_RUNNER_INPUT_TOKEN, not --token: a command line is visible to every account
 # through ps, an environment only to its owner and root. no_log keeps it out of the output on failure.
 - name: Register the runner with GitHub
@@ -33,14 +80,28 @@
     cmd: >-
       ./config.sh
       --unattended
-      --url "{{ github_runner_repo_url }}"
-      --name "{{ inventory_hostname }}"
+      --url "{{ github_runner_url }}"
+      --name "{{ github_runner_name }}"
+      --replace
     chdir: "{{ github_runner_dir }}"
     creates: "{{ github_runner_dir }}/.runner"
   become_user: "{{ github_runner_user }}"
   environment:
     ACTIONS_RUNNER_INPUT_TOKEN: "{{ github_runner_token }}"
+  register: github_runner_config
+  failed_when: false
   no_log: true
+
+# no_log hides the whole result above. config.sh never prints the token (it reads it from the
+# environment), so its own output is safe to show and says why the registration failed.
+- name: Check the registration succeeded
+  ansible.builtin.assert:
+    that:
+      - github_runner_config.rc | default(0) == 0
+    fail_msg: >-
+      config.sh failed: {{ (github_runner_config.stdout_lines | default([]))[-6:] | join(' / ') }}
+      {{ github_runner_config.stderr | default('') }}
+    quiet: true
 
 # useradd leaves the home in 0755: any account on the VM could list the runner files and read some of them
 - name: Restrict access to the runner directory

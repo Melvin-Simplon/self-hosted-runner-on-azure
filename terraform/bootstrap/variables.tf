@@ -1,16 +1,14 @@
 variable "subscription_id" {
-  description = "ID of the Azure subscription hosting mpetitRG"
+  description = "ID of the Azure subscription hosting the resource group"
   type        = string
 }
 
 variable "resource_group_name" {
-  description = "Resource Group Azure"
+  description = "Existing resource group of the runner, AZURE_RESOURCE_GROUP in .env"
   type        = string
-  default     = "mpetitRG"
 }
 
 variable "github_repository" {
-  description = "GitHub Repository"
+  description = "Repository (owner/name) whose workflows get the Azure identity, taken from the origin remote"
   type        = string
-  default     = "Melvin-Simplon/self-hosted-runner-on-azure"
 }

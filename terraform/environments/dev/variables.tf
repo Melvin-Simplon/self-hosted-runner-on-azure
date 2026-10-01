@@ -4,9 +4,8 @@ variable "subscription_id" {
 }
 
 variable "resource_group_name" {
-  description = "Existing resource group, Terraform only reads it (no right to create one)"
+  description = "Existing resource group, Terraform only reads it (no right to create one), AZURE_RESOURCE_GROUP in .env"
   type        = string
-  default     = "mpetitRG"
 }
 
 variable "name_prefix" {

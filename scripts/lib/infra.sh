@@ -44,9 +44,14 @@ infra_terraform() {
 
 # Proves what validate cannot: Azure accepted the VM and its ephemeral OS disk
 infra_check() {
-    require_cmd az || return 1
+    require_cmd az terraform || return 1
     log_step "Infra: check the runner VM"
-    local rg="mpetitRG" vm="vm-runner" state placement
+    local rg vm="vm-runner" state placement
+    rg="$(terraform -chdir="${INFRA_TF_DIR}" output -raw resource_group_name 2>/dev/null)"
+    if [[ -z "${rg}" ]]; then
+        log_err "no resource group in the Terraform outputs, run: make infra-apply"
+        return 1
+    fi
     if ! state="$(az vm show -g "${rg}" -n "${vm}" -d --query powerState -o tsv 2>/dev/null)"; then
         log_err "${vm} not found in ${rg}, run: make infra-apply"
         return 1

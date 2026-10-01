@@ -4,7 +4,7 @@ After=network-online.target
 Wants=network-online.target
 
 [Service]
-User=root
+User={{ github_runner_user }}
 WorkingDirectory={{ github_runner_dir }}
 ExecStart={{ github_runner_dir }}/run.sh
 Restart=always

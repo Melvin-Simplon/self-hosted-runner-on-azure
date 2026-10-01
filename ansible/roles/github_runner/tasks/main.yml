@@ -25,3 +25,19 @@
     remote_src: true
     owner: "{{ github_runner_user }}"
     group: "{{ github_runner_user }}"
+
+# Token passed as ACTIONS_RUNNER_INPUT_TOKEN, not --token: a command line is visible to every account
+# through ps, an environment only to its owner and root. no_log keeps it out of the output on failure.
+- name: Register the runner with GitHub
+  ansible.builtin.command:
+    cmd: >-
+      ./config.sh
+      --unattended
+      --url "{{ github_runner_repo_url }}"
+      --name "{{ inventory_hostname }}"
+    chdir: "{{ github_runner_dir }}"
+    creates: "{{ github_runner_dir }}/.runner"
+  become_user: "{{ github_runner_user }}"
+  environment:
+    ACTIONS_RUNNER_INPUT_TOKEN: "{{ github_runner_token }}"
+  no_log: true

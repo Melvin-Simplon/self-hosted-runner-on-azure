@@ -1,62 +1,62 @@
-# Consignes du projet
+# Project brief
 
-## Énoncé
+## Assignment
 
-> Provisionner une VM Azure avec Terraform, la configurer en runner self-hosted GitHub Actions (et optionnellement GitLab CI) avec Ansible, puis basculer une pipeline existante dessus pour mesurer le gain réel par rapport à un runner hébergé.
+> Provision an Azure VM with Terraform, configure it as a self-hosted GitHub Actions runner (and optionally a GitLab CI runner) with Ansible, then switch an existing pipeline to it to measure the real gain compared to a hosted runner.
 >
-> L'ensemble du cycle (provisioning, configuration, exécution) doit être piloté depuis GitHub Actions/GitLab CI : aucune commande manuelle depuis le poste du candidat en dehors de la mise au point initiale.
+> The whole lifecycle (provisioning, configuration, execution) must be driven from GitHub Actions/GitLab CI: no manual command from the candidate's workstation apart from the initial setup.
 
-## Objectifs
+## Goals
 
-1. **Provisionner** une VM Linux sur Azure avec **Terraform**.
-2. **Configurer** cette VM en runner **self-hosted GitHub Actions** avec **Ansible**.
-3. **En option** : l'enregistrer aussi comme runner **GitLab CI**.
-4. **Basculer** une pipeline existante sur ce runner.
-5. **Mesurer** le gain réel face à un runner hébergé (`ubuntu-latest` côté GitHub, runners SaaS côté GitLab).
+1. **Provision** a Linux VM on Azure with **Terraform**.
+2. **Configure** this VM as a **self-hosted GitHub Actions** runner with **Ansible**.
+3. **Optional**: also register it as a **GitLab CI** runner.
+4. **Switch** an existing pipeline to this runner.
+5. **Measure** the real gain against a hosted runner (`ubuntu-latest` on GitHub, SaaS runners on GitLab).
 
-## Contrainte principale : tout passe par la CI
+## Main constraint: everything goes through CI
 
-Le provisioning, la configuration et l'exécution sont **déclenchés par des pipelines**, jamais depuis le poste local.
+Provisioning, configuration and execution are **triggered by pipelines**, never from the local workstation.
 
-Seule exception autorisée : la **mise au point initiale**. Par exemple :
+The only allowed exception is the **initial setup**. For example:
 
-- créer le stockage du state Terraform distant ;
-- créer l'identité Azure utilisée par la CI (OIDC de préférence) ;
-- déclarer les secrets du dépôt.
+- create the remote Terraform state storage;
+- create the Azure identity used by the CI (OIDC preferred);
+- declare the repository secrets.
 
-Tout ce qui est fait à la main doit être **documenté** pour rester reproductible.
+Everything done by hand must be **documented** so it stays reproducible.
 
-## Découpage proposé
+## Suggested breakdown
 
-Ce découpage est une proposition d'organisation, il ne fait pas partie de l'énoncé.
+This breakdown is an organisation proposal, it is not part of the assignment.
 
-1. **Bootstrap** (`terraform/bootstrap/`) : backend distant du state et identité CI. Seule étape manuelle.
-2. **Infrastructure** (`terraform/modules/`, `terraform/environments/dev/`) : réseau, NSG, VM runner. Plan en PR, apply sur `main` via un workflow.
-3. **Configuration** (`ansible/`) : rôle `common` (durcissement, paquets), rôle `github_runner`, rôle optionnel `gitlab_runner`. Lancé par un workflow après l'apply.
-4. **Pipeline témoin** (`app/`) : projet dont la pipeline tourne d'abord sur runner hébergé, puis sur le runner self-hosted.
-5. **Benchmark** (`benchmark/`, `docs/benchmark/`) : même pipeline, plusieurs exécutions sur chaque runner, comparaison chiffrée.
-6. **Destruction** : un workflow dédié pour détruire l'infrastructure et maîtriser les coûts Azure.
+1. **Bootstrap** (`terraform/bootstrap/`): remote state backend and CI identity. The only manual step.
+2. **Infrastructure** (`terraform/modules/`, `terraform/environments/dev/`): network, NSG, runner VM. Plan on PR, apply on `main` through a workflow.
+3. **Configuration** (`ansible/`): `common` role (hardening, packages), `github_runner` role, optional `gitlab_runner` role. Run by a workflow after the apply.
+4. **Reference pipeline** (`app/`): a project whose pipeline first runs on a hosted runner, then on the self-hosted runner.
+5. **Benchmark** (`benchmark/`, `docs/benchmark/`): same pipeline, several runs on each runner, comparison with figures.
+6. **Teardown**: a dedicated workflow to destroy the infrastructure and keep Azure costs under control.
 
-## Points à mesurer
+## What to measure
 
-- **Durée totale** de la pipeline.
-- **Durée par étape** (checkout, installation des dépendances, build, tests).
-- **Effet du cache** : premier run à froid, puis runs suivants.
-- **Temps d'attente** avant prise en charge du job.
-- **Coût** : prix de la VM Azure comparé aux minutes facturées du runner hébergé.
+- **Total duration** of the pipeline.
+- **Duration per step** (checkout, dependency install, build, tests).
+- **Cache effect**: first cold run, then the following runs.
+- **Queue time** before the job is picked up.
+- **Cost**: price of the Azure VM compared to the billed minutes of the hosted runner.
 
-Les runs doivent être **assez nombreux** pour que la comparaison soit crédible (moyenne et médiane, pas un seul essai).
+There must be **enough runs** for the comparison to be credible (mean and median, not a single attempt).
 
-## Points de vigilance
+## Points of attention
 
-- **Aucun secret** dans le dépôt : secrets GitHub/GitLab, Ansible Vault ou Azure Key Vault.
-- **Dépôt public** : un runner self-hosted sur un dépôt public peut exécuter le code d'une PR externe. Restreindre les workflows qui ciblent ce runner.
-- **Accès SSH** à la VM limité (NSG restreint, clé uniquement).
-- **Idempotence** : relancer Terraform et Ansible ne doit rien casser.
+- **No secrets** in the repository: GitHub/GitLab secrets, Ansible Vault or Azure Key Vault.
+- **Public repository**: a self-hosted runner on a public repository can run the code of an external PR. Restrict the workflows that target this runner.
+- **SSH access** to the VM restricted (tight NSG, key only).
+- **Idempotence**: running Terraform and Ansible again must not break anything.
 
-## Livrables attendus
+## Expected deliverables
 
-- Code Terraform et Ansible versionné.
-- Workflows CI couvrant provisioning, configuration, exécution et destruction.
-- Rapport de benchmark avec les chiffres bruts et l'analyse.
-- Documentation de la mise au point initiale.
+- Versioned Terraform and Ansible code.
+- CI workflows covering provisioning, configuration, execution and teardown.
+- Benchmark report with raw figures and analysis.
+- Documentation of the initial setup.

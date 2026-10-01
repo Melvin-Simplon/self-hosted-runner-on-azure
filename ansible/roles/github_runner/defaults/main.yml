@@ -8,3 +8,8 @@ github_runner_dir: /opt/actions-runner
 # Change both together: the checksum protects against a tampered archive
 github_runner_version: "2.337.0"
 github_runner_sha256: 70920811a4f8ad4328818682bca5c6469c1c942fab52448868071d0063816613
+# Repository the runner registers with
+github_runner_repo_url: "https://github.com/Melvin-Simplon/self-hosted-runner-on-azure"
+# Registration token (valid 1 hour), read from the environment so it is never stored in the repo.
+# Empty once the runner is registered: the register task is skipped and does not need it.
+github_runner_token: "{{ lookup('ansible.builtin.env', 'GITHUB_RUNNER_TOKEN') }}"

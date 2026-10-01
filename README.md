@@ -10,12 +10,6 @@
   <i>A GitHub Actions runner on your own Azure VM: Terraform builds it, Ansible registers it with your organization or repository, and the toolkit measures how long your pipelines take on it</i>
 </p>
 
-<p align="center"><sub>Contributors</sub></p>
-
-<p align="center">
-  <a href="https://github.com/WhiteMuush"><img src="https://github.com/WhiteMuush.png" width="56" alt="WhiteMuush" /></a>
-</p>
-
 <br/>
 
 ---

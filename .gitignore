@@ -23,7 +23,7 @@ vault_pass*
 ansible/inventories/**/hosts.generated.*
 .ansible/
 
-# Secrets et clés
+# Secrets and keys
 .env
 .env.*
 !.env.example

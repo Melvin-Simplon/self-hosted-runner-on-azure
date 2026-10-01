@@ -1,48 +1,110 @@
-## Self Hosted Runner On Azure
+<br/>
 
-A GitHub Actions runner on your own Azure VM: Terraform creates the VM, Ansible registers it with your organization or repository, and the toolkit measures how long your pipelines take on it.
+<p align="center">
+  <img src="https://skillicons.dev/icons?i=azure,terraform,ansible,githubactions,bash&perline=5" alt="Azure, Terraform, Ansible, GitHub Actions, Bash" />
+</p>
 
-### Set up your own runner
+<h1 align="center">Self-hosted GitHub Runner on Azure</h1>
 
-Prerequisites: `az`, `terraform`, `ansible`, `gh` and `jq`, an Azure resource group you can deploy into, and an [HCP Terraform](https://app.terraform.io) organization for the state.
+<p align="center">
+  <i>A GitHub Actions runner on your own Azure VM: Terraform builds it, Ansible registers it with your organization or repository, and the toolkit measures how long your pipelines take on it</i>
+</p>
 
-1. Fork or clone this repository, then `az login`, `gh auth login` and `terraform login`.
-2. `make setup`: asks the four values of `.env` (resource group, HCP organization, runner target, PAT), picked from lists, checks the PAT, then offers to run every phase below.
+<br/>
 
-The phases, also in the `make` menu:
+---
 
-1. `make bootstrap-init bootstrap-apply`: the Azure identity used by the CI of your copy.
-2. `make bootstrap-ssh-key`: the SSH key Ansible uses to reach the VM.
-3. `make infra-init infra-apply`: the network and the VM.
-4. `make ansible-apply`: installs the runner and registers it with `GITHUB_RUNNER_URL`.
+<br/>
 
-To fill `.env` by hand instead, copy `.env.example`: each value is explained there.
+## The toolkit
 
-### Use it in a workflow
+`make` opens the menu. Each phase builds on the previous one, `Setup` asks everything once and can run the others in a row.
 
-The runner does not serve this toolkit's repository, it serves the target picked in `make setup`: your project repository (personal or in an organization) or a whole organization. You need admin rights on that target. Then any repository covered by `GITHUB_RUNNER_URL` can send jobs to the runner:
+| Phase | Role |
+| --- | --- |
+| `Setup` | Asks the four values of `.env`, picked from lists, checks the GitHub token |
+| `Bootstrap` | Azure identity for the CI of your copy, SSH key of the `ansible` account |
+| `Infra` | Network and runner VM, with Terraform on an HCP Terraform backend |
+| `Ansible` | Installs the runner and registers it with your target |
+| `Benchmark` | Logs and total CI duration of any run, to the millisecond |
+
+<p align="center">
+  <img src="docs/images/menu.png" width="760" alt="Toolkit menu" />
+</p>
+
+<br/>
+
+---
+
+<br/>
+
+## Setup
+
+Prerequisites: `az`, `gh`, `terraform`, `ansible` and `jq`, an Azure resource group you can deploy into, an [HCP Terraform](https://app.terraform.io) organization for the state.
+
+```bash
+az login && gh auth login && terraform login
+make setup
+```
+
+The runner serves the target you pick, not this repository: your project repository (personal or in an organization) or a whole organization. You need admin rights on it. Setup opens a prefilled token page for that target, then checks the token with GitHub before saving it.
+
+`.env` stays on your machine, ignored by git. To fill it by hand, copy [`.env.example`](.env.example), each value is explained there.
+
+<br/>
+
+---
+
+<br/>
+
+## Use it in a workflow
+
+Any repository covered by the target sends its jobs to the runner with its labels:
 
 ```yaml
 jobs:
   build:
     runs-on: [self-hosted, Linux, X64]
-```
-
-With an organization target, the default runner group refuses public repositories: their jobs wait in the queue forever. `make setup` offers to allow them (or the organization settings: Actions, Runner groups, Default, "Allow public repositories"). A pull request from a fork could then run on the VM, so guard each job:
-
-```yaml
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
 ```
 
-### Change the target
+The `if` keeps pull requests from forks off the VM. An organization runner group refuses public repositories by default, their jobs then wait forever: Setup offers to allow them.
 
-Change `GITHUB_RUNNER_URL` (or run `make setup` again), then `make ansible-apply`: Ansible sees the runner is registered elsewhere, drops that registration and registers it with the new target. The old entry stays offline on its previous organization or repository, delete it in Settings, Actions, Runners, or GitHub removes it after 14 days.
+<br/>
 
-### Benchmark
+---
 
-`make` then Benchmark: pick a repository, then one of its last runs.
+<br/>
 
-- **Logs**: every job log of the run.
-- **Metrics**: total CI duration to the millisecond, from the moment GitHub queues the job to the last line written by the runner. The GitHub API only has seconds, so the figure comes from the log archive of the run.
+## Change the target
 
-From the command line: `make bench-runs`, then `make bench-metrics RUN=<id>` or `make bench-logs RUN=<id>`, with `REPO=<owner/name>` for another repository.
+Run `make setup` again with the new target, then `make ansible-apply`. Ansible sees the runner is registered elsewhere, drops that registration and registers it again, the VM stays. The runner is named after its VM (`vm-runner-<machine id>`), so several people can register theirs in the same organization.
+
+<br/>
+
+---
+
+<br/>
+
+## Benchmark
+
+```bash
+make bench-runs
+make bench-metrics RUN=<id>
+```
+
+Pick a repository and a run in the menu, or pass `REPO=<owner/name>` on the command line. The GitHub API only gives seconds, so the total comes from the log archive of the run: from the moment GitHub queues the job to the last line written by the runner.
+
+```
+==> Total CI duration
+  OK  3.657s, job queued at 13:58:18.004, last runner line at 13:58:21.661 UTC
+    GitHub API, to the second: 11s from trigger to job end, log upload included
+```
+
+<br/>
+
+---
+
+<br/>
+
+<p align="center"><sub>Brief in <a href="docs/CONSIGNES.md">docs/CONSIGNES.md</a></sub></p>

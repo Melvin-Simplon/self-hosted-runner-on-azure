@@ -1,0 +1,14 @@
+[Unit]
+Description=GitHub Actions runner
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=root
+WorkingDirectory={{ github_runner_dir }}
+ExecStart={{ github_runner_dir }}/run.sh
+Restart=always
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target

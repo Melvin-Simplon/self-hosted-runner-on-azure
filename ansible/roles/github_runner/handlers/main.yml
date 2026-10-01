@@ -1,0 +1,5 @@
+---
+- name: Restart the runner
+  ansible.builtin.service:
+    name: github-runner
+    state: restarted

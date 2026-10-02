@@ -11,7 +11,6 @@ readonly SETUP_OTHER="__other__"
 readonly SETUP_PAT_URL="https://github.com/settings/personal-access-tokens/new"
 # How many of the person's repositories the runner target list shows
 readonly SETUP_REPO_COUNT=15
-readonly SETUP_TF_CREDENTIALS="${HOME}/.terraform.d/credentials.tfrc.json"
 
 setup_check_tools() {
     local cmd
@@ -79,12 +78,11 @@ setup_pick_value() {
 
 # Prints the HCP Terraform organizations of the `terraform login` session, one per line, or nothing
 setup_hcp_organizations() {
-    local token
-    token="$(jq -r '.credentials["app.terraform.io"].token // empty' "${SETUP_TF_CREDENTIALS}" 2>/dev/null)"
-    [[ -n "${token}" ]] || return 0
-    # Token in a header read from stdin: never in the command line
-    curl -fsS -H @- https://app.terraform.io/api/v2/organizations <<<"Authorization: Bearer ${token}" 2>/dev/null |
-        jq -r '.data[].id'
+    local response
+    [[ -n "$(hcp_token)" ]] || return 0
+    response="$(hcp_api GET /organizations 2>/dev/null)" || return 0
+    [[ "${response##*$'\n'}" == "200" ]] || return 0
+    jq -r '.data[].id' <<<"${response%$'\n'*}"
 }
 
 setup_ask_values() {

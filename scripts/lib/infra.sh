@@ -32,6 +32,7 @@ infra_terraform() {
         export TF_VAR_ssh_public_key
 
         log_step "Infra: terraform ${action}"
+        [[ "${action}" == "output" ]] || hcp_ensure_local_execution "${INFRA_TF_DIR}" || exit 1
         # terraform apply and destroy ask for confirmation themselves
         if terraform -chdir="${INFRA_TF_DIR}" "${action}"; then
             log_ok "terraform ${action} succeeded"

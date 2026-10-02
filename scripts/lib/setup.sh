@@ -220,9 +220,7 @@ setup_public_repositories() {
 
 # Each phase runs only if the previous one succeeded. terraform apply asks for its own confirmation.
 setup_run_phases() {
-    bootstrap_terraform init &&
-        bootstrap_terraform apply &&
-        bootstrap_ssh_key &&
+    bootstrap_ssh_key &&
         infra_terraform init &&
         infra_terraform apply &&
         ansible_apply
@@ -245,7 +243,7 @@ run_setup() {
     ui_note "the phases can run now, or later from the menu in the same order"
     ui_section_end
 
-    ui_ask "Run every phase now: bootstrap, SSH key, infra, ansible? [y/N]" || return 1
+    ui_ask "Run every phase now: SSH key, infra, ansible? [y/N]" || return 1
     if [[ "${REPLY}" =~ ^[yY]$ ]]; then
         setup_run_phases
     fi

@@ -21,6 +21,6 @@ variable "vm_size" {
 }
 
 variable "ssh_public_key" {
-  description = "Public key of the ansible account, from the GitHub variable ANSIBLE_SSH_PUBLIC_KEY"
+  description = "Public key of the ansible account, read from the local key file by the toolkit"
   type        = string
 }

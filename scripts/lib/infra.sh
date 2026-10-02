@@ -23,7 +23,7 @@ infra_terraform() {
     (
         # Not followed here (checked on its own): it re-sources core.sh, which confuses shellcheck
         # shellcheck source=/dev/null
-        source "${RUNNER_ROOT}/scripts/bootstrap/env.sh" || exit 1
+        source "${RUNNER_ROOT}/scripts/env.sh" || exit 1
         if [[ ! -f "${ANSIBLE_SSH_KEY_FILE}.pub" ]]; then
             log_err "no ansible public key, run: make bootstrap-ssh-key"
             exit 1

@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 
 # Exports the variables needed by terraform/environments/dev.
-# Must be sourced, not executed: `source scripts/bootstrap/env.sh`
+# Must be sourced, not executed: `source scripts/env.sh`
 # No `set -euo pipefail` here: it would leak into the caller's shell.
 # No `main` either: it would overwrite the caller's `main` when sourced from another script.
 # Works in bash and zsh: zsh has no BASH_SOURCE, but sets $0 to the sourced file.
 
-: "${RUNNER_ROOT:=$(cd -- "$(dirname -- "${BASH_SOURCE[0]:-$0}")/../.." && pwd)}"
+: "${RUNNER_ROOT:=$(cd -- "$(dirname -- "${BASH_SOURCE[0]:-$0}")/.." && pwd)}"
 : "${ENV_FILE:=${RUNNER_ROOT}/.env}"
 
 # shellcheck source=scripts/lib/core.sh
@@ -45,11 +45,11 @@ export_project_env() {
     log_ok "resource group ${TF_VAR_resource_group_name}, HCP organization ${TF_CLOUD_ORGANIZATION}"
 }
 
-load_bootstrap_env() {
+load_terraform_env() {
     ensure_sourced
     ensure_az_login || return 1
     export_subscription_id
     export_project_env
 }
 
-load_bootstrap_env || return 1
+load_terraform_env || return 1

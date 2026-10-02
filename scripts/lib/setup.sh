@@ -91,26 +91,27 @@ setup_ask_values() {
     local hint
     local -a candidates=()
 
-    mapfile -t candidates < <(az group list --query "[].name" -o tsv | sort -f)
-    setup_pick_value AZURE_RESOURCE_GROUP "RESOURCE GROUP" "existing, the runner VM goes there" "${candidates[@]}" || return 1
+    # ${a[@]+...} keeps an empty list from failing under set -u in the bash 3.2 of macOS
+    read_lines candidates < <(az group list --query "[].name" -o tsv | sort -f)
+    setup_pick_value AZURE_RESOURCE_GROUP "RESOURCE GROUP" "existing, the runner VM goes there" ${candidates[@]+"${candidates[@]}"} || return 1
     setup_env_set AZURE_RESOURCE_GROUP "${REPLY}" || return 1
 
-    mapfile -t candidates < <(setup_hcp_organizations)
+    read_lines candidates < <(setup_hcp_organizations)
     hint="holds the Terraform state"
     ((${#candidates[@]} > 0)) || hint="no terraform login session, type it or run terraform login first"
-    setup_pick_value TF_CLOUD_ORGANIZATION "HCP TERRAFORM ORGANIZATION" "${hint}" "${candidates[@]}" || return 1
+    setup_pick_value TF_CLOUD_ORGANIZATION "HCP TERRAFORM ORGANIZATION" "${hint}" ${candidates[@]+"${candidates[@]}"} || return 1
     setup_env_set TF_CLOUD_ORGANIZATION "${REPLY}" || return 1
     TF_CLOUD_ORGANIZATION="${REPLY}"
 
     # Organizations first (one runner for all their repositories), then the repositories the person
     # administers, latest pushed first: the project that should use the runner is usually among them
-    mapfile -t candidates < <(
+    read_lines candidates < <(
         gh api user/orgs --jq '"https://github.com/" + .[].login'
         gh api "user/repos?affiliation=owner,organization_member&sort=pushed&per_page=${SETUP_REPO_COUNT}" \
             --jq '.[] | select(.permissions.admin) | "https://github.com/" + .full_name'
     )
     while true; do
-        setup_pick_value GITHUB_RUNNER_URL "RUNNER TARGET" "an org serves all its repositories, a repository only itself (your project)" "${candidates[@]}" || return 1
+        setup_pick_value GITHUB_RUNNER_URL "RUNNER TARGET" "an org serves all its repositories, a repository only itself (your project)" ${candidates[@]+"${candidates[@]}"} || return 1
         GITHUB_RUNNER_URL="${REPLY}"
         runner_scope >/dev/null 2>&1 && break
         ui_status fail "must be https://github.com/<org> or https://github.com/<owner>/<repo>"

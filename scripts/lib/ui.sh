@@ -121,7 +121,9 @@ ui_ask() {
 # Same as ui_ask for a token or a password: one * per character typed or pasted,
 # so a paste shows up without revealing the secret. Spaces and line breaks are dropped.
 ui_ask_secret() {
-    local char secret=""
+    local char secret="" esc_timeout=0.05
+    # bash 3.2 (macOS) only takes a whole number of seconds: a lone Escape then waits 1s
+    ((BASH_VERSINFO[0] >= 4)) || esc_timeout=1
     ui_line
     printf '%s%s%s %s%s : %s' "${BLUE}" "$(ui_prompt_glyph "${2:-close}")" "${RESET}" "${BOLD}${BRIGHT_BLUE}" "$1" "${RESET}"
     while true; do
@@ -140,7 +142,7 @@ ui_ask_secret() {
                 ;;
             # Escape sequence (arrow key, bracketed paste markers \e[200~ \e[201~): skip it whole
             $'\e')
-                while IFS= read -r -s -n 1 -t 0.05 char && [[ ! "${char}" =~ [A-Za-z~] ]]; do :; done
+                while IFS= read -r -s -n 1 -t "${esc_timeout}" char && [[ ! "${char}" =~ [A-Za-z~] ]]; do :; done
                 ;;
             [[:space:]]) ;;
             *)
@@ -183,9 +185,11 @@ ui_status() {
 # Shows <labels> numbered in a section and sets REPLY to the matching value, Enter picks the first.
 # A wrong number asks again. Usage: ui_pick <title> <hint> <values array> <labels array> [open|close]
 ui_pick() {
-    # Prefixed names: a nameref with the same name as the caller array would point to itself
-    local -n _pick_values="$3" _pick_labels="$4"
+    # Copies the caller arrays by name: bash 3.2 (macOS) has no nameref (local -n).
+    # ${a[@]+...} keeps an empty array from failing under set -u before bash 4.4.
+    local -a _pick_values=() _pick_labels=()
     local i pick
+    eval "_pick_values=(\${$3[@]+\"\${$3[@]}\"}) _pick_labels=(\${$4[@]+\"\${$4[@]}\"})"
     ui_section "$1" "$2"
     for i in "${!_pick_labels[@]}"; do
         printf '  %s╞─>%s %s%2d%s  %s\n' "${BLUE}" "${RESET}" "${BRIGHT_BLUE}" $((i + 1)) "${RESET}" "${_pick_labels[i]}"

@@ -97,3 +97,13 @@ press_enter_to_continue() {
     printf '\n   %sPress Enter to go back to the menu...%s' "${DIM}" "${RESET}"
     read -r _
 }
+
+# Reads stdin into the array named <name>, one element per line: read_lines <name> < <(cmd)
+# Stands in for mapfile -t, missing from the bash 3.2 that macOS ships.
+read_lines() {
+    local _line
+    eval "$1=()"
+    while IFS= read -r _line || [[ -n "${_line}" ]]; do
+        eval "$1+=(\"\${_line}\")"
+    done
+}

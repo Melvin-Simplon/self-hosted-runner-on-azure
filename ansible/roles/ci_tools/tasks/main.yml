@@ -29,6 +29,11 @@
       suites: any
       components: main
       key: https://packages.buildkite.com/helm-linux/helm-debian/gpgkey
+    - name: github-cli
+      uris: https://cli.github.com/packages
+      suites: stable
+      components: main
+      key: https://cli.github.com/packages/githubcli-archive-keyring.gpg
   loop_control:
     label: "{{ item.name }}"
 
@@ -44,6 +49,8 @@
       - docker-compose-plugin
       - kubectl
       - helm
+      - gh
+      - make
     update_cache: true
     state: present
 

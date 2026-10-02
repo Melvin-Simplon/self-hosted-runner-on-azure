@@ -24,6 +24,7 @@ bootstrap_terraform() {
         # shellcheck source=/dev/null
         source "${RUNNER_ROOT}/scripts/bootstrap/env.sh" || exit 1
         log_step "Bootstrap: terraform ${action}"
+        [[ "${action}" == "output" ]] || hcp_ensure_local_execution "${BOOTSTRAP_TF_DIR}" || exit 1
         if terraform -chdir="${BOOTSTRAP_TF_DIR}" "${action}"; then
             log_ok "terraform ${action} succeeded"
         else

@@ -21,6 +21,8 @@ source "${RUNNER_ROOT}/scripts/lib/core.sh"
 TF_CLOUD_ORGANIZATION="${TF_CLOUD_ORGANIZATION:-$(env_value TF_CLOUD_ORGANIZATION)}"
 export TF_CLOUD_ORGANIZATION
 
+# shellcheck source=scripts/lib/hcp.sh
+source "${RUNNER_ROOT}/scripts/lib/hcp.sh"
 # shellcheck source=scripts/lib/ui.sh
 source "${RUNNER_ROOT}/scripts/lib/ui.sh"
 # shellcheck source=scripts/lib/bootstrap.sh

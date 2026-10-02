@@ -9,8 +9,7 @@ terraform {
   }
 }
 
-# Auth comes from the environment: `az login` on the workstation,
-# ARM_USE_OIDC + ARM_CLIENT_ID + ARM_TENANT_ID in GitHub Actions
+# Auth comes from `az login` on the workstation
 provider "azurerm" {
   subscription_id = var.subscription_id
 

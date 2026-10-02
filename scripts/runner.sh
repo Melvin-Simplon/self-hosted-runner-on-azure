@@ -44,7 +44,7 @@ Usage: scripts/runner.sh [command]
 
   menu                       Interactive menu (default)
   setup                      Guided setup: asks the .env values, then runs every phase
-  bootstrap <action>         One-time setup: init, plan, apply, output, ssh-key
+  bootstrap ssh-key          Create the SSH key of the ansible account, once
   infra <action>             Dev environment: init, plan, apply, check, output, destroy
   ansible <action>           Configure the VM: ping, check, apply
   benchmark <action> [id]    runs, then logs or metrics of run <id> (default: last completed)
@@ -63,7 +63,10 @@ main_loop() {
                 run_setup
                 press_enter_to_continue
                 ;;
-            2) handle_bootstrap_menu ;;
+            2)
+                bootstrap_ssh_key
+                press_enter_to_continue
+                ;;
             3) handle_infra_menu ;;
             4) handle_ansible_menu ;;
             5) handle_benchmark_menu ;;

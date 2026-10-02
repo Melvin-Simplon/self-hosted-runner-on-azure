@@ -23,7 +23,7 @@
 | Phase | Role |
 | --- | --- |
 | `Setup` | Asks the four values of `.env`, picked from lists, checks the GitHub token |
-| `Bootstrap` | Azure identity for the CI of your copy, SSH key of the `ansible` account |
+| `Bootstrap` | SSH key of the `ansible` account, kept on your machine |
 | `Infra` | Network and runner VM, with Terraform on an HCP Terraform backend |
 | `Ansible` | Installs the runner and registers it with your target |
 | `Benchmark` | Logs and total CI duration of any run, to the millisecond |

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Exports the variables needed by terraform/bootstrap and terraform/environments/dev.
+# Exports the variables needed by terraform/environments/dev.
 # Must be sourced, not executed: `source scripts/bootstrap/env.sh`
 # No `set -euo pipefail` here: it would leak into the caller's shell.
 # No `main` either: it would overwrite the caller's `main` when sourced from another script.
@@ -41,8 +41,7 @@ export_project_env() {
         log_err "AZURE_RESOURCE_GROUP and TF_CLOUD_ORGANIZATION missing in ${ENV_FILE}, see .env.example"
         return 1
     fi
-    TF_VAR_github_repository="${TF_VAR_github_repository:-$(github_repo_slug)}"
-    export TF_VAR_resource_group_name TF_CLOUD_ORGANIZATION TF_VAR_github_repository
+    export TF_VAR_resource_group_name TF_CLOUD_ORGANIZATION
     log_ok "resource group ${TF_VAR_resource_group_name}, HCP organization ${TF_CLOUD_ORGANIZATION}"
 }
 

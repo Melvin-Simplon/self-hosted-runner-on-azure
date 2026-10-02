@@ -227,18 +227,6 @@ show_main_menu() {
     ui_footer 9 "Lint" 0 "Exit"
 }
 
-show_bootstrap_menu() {
-    ui_header
-    ui_section "BOOTSTRAP" "run once from the workstation"
-    ui_item 1 "Init"
-    ui_item 2 "Plan"
-    ui_item 3 "Apply"
-    ui_item 4 "Output"
-    ui_item 5 "SSH key"
-    ui_section_end
-    ui_footer 0 "Back"
-}
-
 show_infra_menu() {
     ui_header
     ui_section "INFRA" "dev environment, the VM costs money while it exists"

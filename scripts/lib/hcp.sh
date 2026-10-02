@@ -1,4 +1,4 @@
-    #!/usr/bin/env bash
+#!/usr/bin/env bash
 # lib/hcp.sh: HCP Terraform API with the `terraform login` token.
 # Keeps the workspaces in local execution: a remote run has no `az login`, so azurerm fails.
 

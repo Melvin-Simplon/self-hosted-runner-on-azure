@@ -1,0 +1,75 @@
+---
+# Without components, the suite is a path inside the repository (pkgs.k8s.io layout)
+- name: Add the apt repositories of the CI tools
+  ansible.builtin.deb822_repository:
+    name: "{{ item.name }}"
+    types: deb
+    uris: "{{ item.uris }}"
+    suites: "{{ item.suites }}"
+    components: "{{ item.components | default(omit) }}"
+    architectures: amd64
+    signed_by: "{{ item.key }}"
+  loop:
+    - name: azure-cli
+      uris: https://packages.microsoft.com/repos/azure-cli/
+      suites: "{{ ansible_facts['distribution_release'] }}"
+      components: main
+      key: https://packages.microsoft.com/keys/microsoft.asc
+    - name: docker
+      uris: https://download.docker.com/linux/ubuntu
+      suites: "{{ ansible_facts['distribution_release'] }}"
+      components: stable
+      key: https://download.docker.com/linux/ubuntu/gpg
+    - name: kubernetes
+      uris: "https://pkgs.k8s.io/core:/stable:/v{{ ci_tools_kubernetes_version }}/deb/"
+      suites: /
+      key: "https://pkgs.k8s.io/core:/stable:/v{{ ci_tools_kubernetes_version }}/deb/Release.key"
+    - name: helm
+      uris: https://packages.buildkite.com/helm-linux/helm-debian/any/
+      suites: any
+      components: main
+      key: https://packages.buildkite.com/helm-linux/helm-debian/gpgkey
+  loop_control:
+    label: "{{ item.name }}"
+
+# update_cache: the cache refreshed by the common role does not know these repositories yet
+- name: Install the CI tools
+  ansible.builtin.apt:
+    name:
+      - azure-cli
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - docker-buildx-plugin
+      - docker-compose-plugin
+      - kubectl
+      - helm
+    update_cache: true
+    state: present
+
+- name: Start Docker
+  ansible.builtin.systemd_service:
+    name: docker
+    enabled: true
+    state: started
+
+# Full file path in dest: with a directory, get_url would download again on every run
+- name: Download the kustomize archive
+  ansible.builtin.get_url:
+    url: "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv{{ ci_tools_kustomize_version }}/kustomize_v{{ ci_tools_kustomize_version }}_linux_amd64.tar.gz"
+    dest: "/usr/local/src/kustomize_v{{ ci_tools_kustomize_version }}_linux_amd64.tar.gz"
+    checksum: "sha256:{{ ci_tools_kustomize_sha256 }}"
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Install kustomize
+  ansible.builtin.unarchive:
+    src: "/usr/local/src/kustomize_v{{ ci_tools_kustomize_version }}_linux_amd64.tar.gz"
+    dest: /usr/local/bin
+    remote_src: true
+    include:
+      - kustomize
+    owner: root
+    group: root
+    mode: "0755"

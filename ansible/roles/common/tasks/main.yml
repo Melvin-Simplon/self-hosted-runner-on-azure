@@ -14,6 +14,8 @@
       - jq
       - tar
       - unzip
+      # Needed by deb822_repository (ci_tools role) on the target
+      - python3-debian
     state: present
 
 - name: Harden the SSH server

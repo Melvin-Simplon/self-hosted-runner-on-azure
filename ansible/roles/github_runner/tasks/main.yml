@@ -6,7 +6,9 @@
     fail_msg: "GITHUB_RUNNER_URL must be https://github.com/<org> or https://github.com/<owner>/<repo>, got: '{{ github_runner_url }}'"
     quiet: true
 
-# No `groups`: the account joins no admin group, so a CI job can never become root
+# No sudo group. The docker group lets the CI jobs build and run containers, but it is
+# root-equivalent (a job can mount / in a container): only trusted workflows may target this runner.
+# The restart makes the running service pick up the new group.
 - name: Create the runner user
   ansible.builtin.user:
     name: "{{ github_runner_user }}"
@@ -14,6 +16,9 @@
     create_home: true
     system: true
     shell: /usr/sbin/nologin
+    groups: docker
+    append: true
+  notify: Restart the runner
 
 # Full file path in dest: with a directory, get_url would download again on every run
 - name: Download the runner archive

@@ -13,6 +13,7 @@
       - curl
       - jq
       - tar
+      - unzip
     state: present
 
 - name: Harden the SSH server

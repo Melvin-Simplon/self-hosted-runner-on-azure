@@ -29,14 +29,14 @@ benchmark_default_repo() {
 # Menu: an organization target lists its repositories, a repository target is used as is
 benchmark_pick_repo() {
     local scope
+    # shellcheck disable=SC2034 # filled by read_lines and read by ui_pick through its name
     local -a repos=()
     scope="$(runner_scope)" || return 1
     if [[ "${scope}" == repos/* ]]; then
         BENCHMARK_REPO="${scope#repos/}"
         return 0
     fi
-    # shellcheck disable=SC2034 # read by ui_pick through a nameref
-    mapfile -t repos < <(gh repo list "${scope#orgs/}" -L "${BENCHMARK_REPO_COUNT}" --json nameWithOwner --jq '.[].nameWithOwner')
+    read_lines repos < <(gh repo list "${scope#orgs/}" -L "${BENCHMARK_REPO_COUNT}" --json nameWithOwner --jq '.[].nameWithOwner')
     ui_pick "REPOSITORIES" "of ${scope#orgs/}, the runner serves them all" repos repos open || return 1
     BENCHMARK_REPO="${REPLY}"
 }
